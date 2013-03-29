@@ -9,7 +9,7 @@ func main(){
 	originalMatrix, _ = tools.ParseInput()
 	createMatrix()
 	
-	if solvable(smallestNbCells(m.head)) {
+	if solvable(getSmallerColumn(m.head)) {
 		fmt.Println("sudoku solvable !")
 		for _,t := range originalMatrix {
 			fmt.Println(t)
