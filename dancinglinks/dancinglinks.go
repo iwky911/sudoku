@@ -146,13 +146,13 @@ func nbCells(col *Cell) int {
 	return i
 }
 
-func smallestNbCells(col *Cell) *Cell {
-	if col==nil{
+func getSmallerColumn(start *Cell) *Cell {
+	if start==nil{
 		return nil
 	}
-	rec := nbCells(col)
-	index := col
-	for c:= col.right; c!=col; c=c.right {
+	rec := nbCells(start)
+	index := start
+	for c:= start.right; c!=start; c=c.right {
 		nb:= nbCells(c)
 		if nb<rec {
 			rec=nb
@@ -162,7 +162,7 @@ func smallestNbCells(col *Cell) *Cell {
 	return index
 }
 
-func (sel *Cell) removeLinked(){
+func (sel *Cell) removeLinkedCells(){
 	sel.removeColumn()
 	for col:= sel.right; col!=sel; col=col.right {
 		col.removeColumn()
@@ -174,7 +174,7 @@ func (sel *Cell) removeLinked(){
 	}
 }
 
-func (sel *Cell) restoreLinked(){
+func (sel *Cell) restoreLinkedCells(){
 	sel.restoreColumn()
 	for col:= sel.right; col!=sel; col=col.right {
 		col.restoreColumn()
@@ -194,14 +194,14 @@ func solvable(c *Cell) bool {
 		return false
 	default:
 		first:=true
-		for elt :=c.down; (elt != c.down) || (elt == c.down && first) ; elt = elt.down {
-			elt.removeLinked()
-			if solvable(smallestNbCells(m.head)){
-				aff := elt.value
+		for selectedRow :=c.down; (selectedRow != c.down) || (selectedRow == c.down && first) ; selectedRow = selectedRow.down {
+			selectedRow.removeLinkedCells()
+			if solvable(getSmallerColumn(m.head)){
+				aff := selectedRow.value
 				originalMatrix[aff[0]][aff[1]]=aff[2]
 				return true
 			}
-			elt.restoreLinked()
+			selectedRow.restoreLinkedCells()
 			first=false
 		}
 		return false
