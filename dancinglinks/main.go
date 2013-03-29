@@ -7,11 +7,14 @@ import(
 
 func main(){
 	originalMatrix, _ = tools.ParseInput()
-	//fmt.Println(originalMatrix)
 	createMatrix()
 	
-	fmt.Println(solvable(smallestNbCells(m.head)))
-	for _,t := range originalMatrix {
+	if solvable(smallestNbCells(m.head)) {
+		fmt.Println("sudoku solvable !")
+		for _,t := range originalMatrix {
 			fmt.Println(t)
 		}
+	}else{
+		fmt.Println("Sorry, this soduko is impossible")
+	}
 }
