@@ -3,11 +3,13 @@ package main
 import(
 	"fmt"
 	"github.com/iwky911/sudoku/tools"
+	"math"
 )
 
 var tableau [][]int
 
 var n int
+var ns int
 
 func lineViolation(i,j int) bool {
 	for k:=0; k<n; k++{
@@ -28,9 +30,9 @@ func rowViolation(i,j int) bool {
 }
 func squareViolation(i,j int) bool{
 	v:=tableau[i][j]
-	is, js := (i/3)*3, (j/3)*3
-	for a:=is;a<is+3;a++{
-		for b:=js;b<js+3;b++{
+	is, js := (i/ns)*ns, (j/ns)*ns
+	for a:=is;a<is+ns;a++{
+		for b:=js;b<js+ns;b++{
 			if v==tableau[a][b] && (a!=i || b!=j) {
 				return true
 			}
@@ -72,6 +74,7 @@ func solvable(i,j int) bool {
 
 func main(){
 	tableau, n = tools.ParseInput()
+	ns = int(math.Sqrt(float64(n)))
 	if solvable(0,0) {
 		fmt.Println("solvable! ")
 		for _,t := range tableau {
