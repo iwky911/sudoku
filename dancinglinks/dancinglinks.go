@@ -1,8 +1,8 @@
 package main
 
-import(
-	"math"
+import (
 	"fmt"
+	"math"
 )
 
 /*
@@ -15,20 +15,20 @@ var m SparseMatrix
 
 var originalMatrix [][]int
 
-type SparseMatrix struct{
+type SparseMatrix struct {
 	headers []Header
-	head *Header
+	head    *Header
 }
 
 type Cell struct {
 	top, down, left, right, head *Cell
-	value *[3]int
+	value                        *[3]int
 }
 
 type Header struct {
 	left, right *Header
-	last *Cell
-	ncells int
+	last        *Cell
+	ncells      int
 }
 
 func addCellToColumn(sparse *SparseMatrix, index int, cell *Cell) {
@@ -41,7 +41,7 @@ func addCellToColumn(sparse *SparseMatrix, index int, cell *Cell) {
 		cell.down = cell
 		return
 	}
-	
+
 	cell.top = header.last
 	cell.down = header.last.down
 	cell.top.down = cell
@@ -50,17 +50,17 @@ func addCellToColumn(sparse *SparseMatrix, index int, cell *Cell) {
 
 func createSparseMatrix(size int) *SparseMatrix {
 	// Column (constraints) are ordered in the following way:
-	// - N * 9 + X (where N < 9 and X < 9): Value X is in column N 
-	// - 9*9 + N * 9 + X (where N < 9 and X < 9): Value X is in row N 
-	// - 2*9*9 + N * 9 + X (where N < 9 and X < 9): Value X is in square N 
+	// - N * 9 + X (where N < 9 and X < 9): Value X is in column N
+	// - 9*9 + N * 9 + X (where N < 9 and X < 9): Value X is in row N
+	// - 2*9*9 + N * 9 + X (where N < 9 and X < 9): Value X is in square N
 	// - 3*9*9 + R * 9 + C (where C is the colum and R is the row): cell in row R and column C has a value.
 	var nColumn = size * size * 4
 	sparse := &SparseMatrix{make([]Header, nColumn), nil}
 	for h := 0; h < nColumn; h++ {
 		var prev = (h - 1 + nColumn) % nColumn
 		var next = (h + 1) % nColumn
-		sparse.headers[h].right = &sparse.headers[next] 
-		sparse.headers[h].left = &sparse.headers[prev] 
+		sparse.headers[h].right = &sparse.headers[next]
+		sparse.headers[h].left = &sparse.headers[prev]
 	}
 
 	sparse.head = &sparse.headers[0]
@@ -72,7 +72,7 @@ func createSparseMatrix(size int) *SparseMatrix {
 				rconstr := new(Cell)
 				sconstr := new(Cell)
 				vconstr := new(Cell)
-				
+
 				// wire them horizontally
 				cconstr.left = vconstr
 				cconstr.right = rconstr
@@ -86,10 +86,10 @@ func createSparseMatrix(size int) *SparseMatrix {
 				// Now wire them vertically.
 				var sizesqrt int
 				sizesqrt = int(math.Sqrt(float64(size)))
-				addCellToColumn(sparse, column * size + value, cconstr)
-				addCellToColumn(sparse, size * size + row * size + value, rconstr)
-				addCellToColumn(sparse, size * size * 2 + (row / sizesqrt) * sizesqrt + column * sizesqrt, sconstr)
-				addCellToColumn(sparse, size * size * 3 + row * size + column, vconstr)
+				addCellToColumn(sparse, column*size+value, cconstr)
+				addCellToColumn(sparse, size*size+row*size+value, rconstr)
+				addCellToColumn(sparse, size*size*2+(row/sizesqrt)*sizesqrt+column*sizesqrt, sconstr)
+				addCellToColumn(sparse, size*size*3+row*size+column, vconstr)
 			}
 		}
 	}
@@ -97,6 +97,7 @@ func createSparseMatrix(size int) *SparseMatrix {
 	fmt.Println("Sparse matrix created")
 	return sparse
 }
+
 /*
 func createMatrix() {
 	n:= len(originalMatrix)
