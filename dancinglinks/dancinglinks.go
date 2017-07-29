@@ -84,11 +84,9 @@ func createSparseMatrix(size int) *SparseMatrix {
 				vconstr.right = cconstr
 
 				// Now wire them vertically.
-				var sizesqrt int
-				sizesqrt = int(math.Sqrt(float64(size)))
 				addCellToColumn(sparse, column*size+value, cconstr)
 				addCellToColumn(sparse, size*size+row*size+value, rconstr)
-				addCellToColumn(sparse, size*size*2+(row/sizesqrt)*sizesqrt+column*sizesqrt, sconstr)
+				addCellToColumn(sparse, size*size*2+getSquare(row, column, size)*size+value, sconstr)
 				addCellToColumn(sparse, size*size*3+row*size+column, vconstr)
 			}
 		}
@@ -96,6 +94,11 @@ func createSparseMatrix(size int) *SparseMatrix {
 
 	fmt.Println("Sparse matrix created")
 	return sparse
+}
+
+func getSquare(row, column, size int) int {
+	sqrt := int(math.Sqrt(float64(size)))
+	return (row/sqrt)*sqrt + column/sqrt
 }
 
 /*
