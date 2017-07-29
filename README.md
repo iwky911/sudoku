@@ -6,3 +6,7 @@ This repo contains to sudoku solver:
 * an exact cover solver using [dancing links][dl]
 
 [dl]: http://en.wikipedia.org/wiki/Dancing_Links
+
+# Usage
+
+TODO(me): add a small description of how to use it.
