@@ -102,35 +102,6 @@ func getSquare(row, column, size int) int {
 }
 
 /*
-func createMatrix() {
-	n:= len(originalMatrix)
-	size:=4*n*n
-	m = SparseMatrix{}
-	m.headers = make([]*Cell, size)
-	m.n= n
-	m.ns= int(math.Sqrt(float64(n)))
-	//creating heads
-	for i:=0; i<size; i++ {
-		m.heads[i] = &Cell{}
-	}
-	//creating links between heads
-	for i:=0; i<size; i++ {
-		m.heads[i].left = m.heads[(i-1+size)%size]
-		m.heads[i].right = m.heads[(i+1)%size]
-	}
-	m.head = m.heads[0]
-	for i:=0; i<m.n; i++{
-		for j:=0; j<m.n; j++{
-			if originalMatrix[i][j]!= -1 {
-				addAffectation(i,j,originalMatrix[i][j]-1)
-			}else{
-				for v:=0; v<m.n; v++ {
-					addAffectation(i,j,v)
-				}
-			}
-		}
-	}
-}
 
 func addCell(c *Cell, i int) {
 	c.head = m.heads[i]
