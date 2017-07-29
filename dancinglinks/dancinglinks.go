@@ -18,11 +18,12 @@ var originalMatrix [][]int
 type SparseMatrix struct {
 	headers []Header
 	head    *Header
+	size    int
 }
 
 type Cell struct {
 	top, down, left, right, head *Cell
-	value                        *[3]int
+	value                        int64
 }
 
 type Header struct {
@@ -55,7 +56,8 @@ func createSparseMatrix(size int) *SparseMatrix {
 	// - 2*9*9 + N * 9 + X (where N < 9 and X < 9): Value X is in square N
 	// - 3*9*9 + R * 9 + C (where C is the colum and R is the row): cell in row R and column C has a value.
 	var nColumn = size * size * 4
-	sparse := &SparseMatrix{make([]Header, nColumn), nil}
+	sizesqrt := int(math.Sqrt(float64(size)))
+	sparse := &SparseMatrix{make([]Header, nColumn), nil, size}
 	for h := 0; h < nColumn; h++ {
 		var prev = (h - 1 + nColumn) % nColumn
 		var next = (h + 1) % nColumn
@@ -86,7 +88,7 @@ func createSparseMatrix(size int) *SparseMatrix {
 				// Now wire them vertically.
 				addCellToColumn(sparse, column*size+value, cconstr)
 				addCellToColumn(sparse, size*size+row*size+value, rconstr)
-				addCellToColumn(sparse, size*size*2+getSquare(row, column, size)*size+value, sconstr)
+				addCellToColumn(sparse, size*size*2+getSquare(row, column, sizesqrt)*size+value, sconstr)
 				addCellToColumn(sparse, size*size*3+row*size+column, vconstr)
 			}
 		}
@@ -96,13 +98,25 @@ func createSparseMatrix(size int) *SparseMatrix {
 	return sparse
 }
 
-func getSquare(row, column, size int) int {
-	sqrt := int(math.Sqrt(float64(size)))
-	return (row/sqrt)*sqrt + column/sqrt
+func getSquare(row, column, sizesqrt int) int {
+	return (row/sizesqrt)*sizesqrt + column/sizesqrt
+}
+
+func getSmallestColumn(head *Header) *Header {
+	if head == nil {
+		return nil
+	}
+
+	rec := head
+	for c := head.right; c != head; c = c.right {
+		if c.ncells < rec.ncells {
+			rec = c
+		}
+	}
+	return rec
 }
 
 /*
-
 func addCell(c *Cell, i int) {
 	c.head = m.heads[i]
 	if m.heads[i].down == nil{
@@ -192,22 +206,6 @@ func nbCells(col *Cell) int {
 		i++
 	}
 	return i
-}
-
-func getSmallerColumn(start *Cell) *Cell {
-	if start==nil{
-		return nil
-	}
-	rec := nbCells(start)
-	index := start
-	for c:= start.right; c!=start; c=c.right {
-		nb:= nbCells(c)
-		if nb<rec {
-			rec=nb
-			index=c
-		}
-	}
-	return index
 }
 
 func (sel *Cell) removeLinkedCells(){

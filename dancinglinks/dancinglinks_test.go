@@ -5,8 +5,15 @@ import (
 )
 
 func TestGetSquare(t *testing.T) {
-	if getSquare(2, 3, 9) != 1 {
+	// row 2, column 3, size 9 (sqrt = 3)
+	if getSquare(2, 3, 3) != 1 {
 		t.Errorf("Expecting square 1")
+	}
+
+	// row 5, column 5, size 9 (sqrt = 3)
+	result := getSquare(5, 5, 3)
+	if result != 4 {
+		t.Errorf("Expecting square 4 but got %i", result)
 	}
 }
 
@@ -27,5 +34,16 @@ func TestMatrixCreation(t *testing.T) {
 		if c != header.last {
 			t.Errorf("Doesn't have the right number of actual rows!")
 		}
+	}
+}
+
+func TestGettingSmallestColumn(t *testing.T) {
+	m := createSparseMatrix(4)
+
+	expected := &m.headers[3]
+	expected.ncells = expected.ncells - 1
+	found := getSmallestColumn(m.head)
+	if found != expected {
+		t.Errorf("smallest column wasn't the expected one")
 	}
 }
