@@ -42,7 +42,7 @@ func main() {
 	sol = append(sol, partialsol...)
 	if solvable {
 		fmt.Println("sudoku is solvable!!")
-		dancinglinks.PrintSolutionFromCode(sol, size)
+		tools.PrintSolutionFromCode(sol, size)
 	} else {
 		fmt.Println("sudoku is not solvable :(")
 	}

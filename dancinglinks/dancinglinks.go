@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"sort"
 )
 
 type SparseMatrix struct {
@@ -241,16 +240,4 @@ func (m *SparseMatrix) FixValue(row, column, value int) (int, error) {
 	}
 	return 0, errors.New(fmt.Sprintf(
 		"Couldn't find the right cell for affectation (%v, %v) = %v\n", row, column, value))
-}
-
-func PrintSolutionFromCode(sol []int, size int) {
-	sort.Ints(sol)
-
-	for i, v := range sol {
-		if i%size == 0 {
-			fmt.Println()
-		}
-		fmt.Printf("%v,", (v%size)+1)
-	}
-	fmt.Println()
 }
