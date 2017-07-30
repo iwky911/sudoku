@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"github.com/iwky911/sudoku/tools"
@@ -16,6 +17,8 @@ func main() {
 	var err error
 	if csvfile != nil {
 		reader, err = os.Open(*csvfile)
+	} else {
+		reader = bufio.NewReader(os.Stdin)
 	}
 	affectations, size, err := tools.ParseCSVInput(reader)
 	if err != nil {

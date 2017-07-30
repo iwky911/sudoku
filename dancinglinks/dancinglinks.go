@@ -7,15 +7,6 @@ import (
 	"sort"
 )
 
-/*
-Contains the struct
-* first n elt: validate row i contains v
-* second n elts: validates column i contains v
-* final n elts: validates block i contains v
-*/
-
-var originalMatrix [][]int
-
 type SparseMatrix struct {
 	headers []Header
 	head    *Header
@@ -248,7 +239,8 @@ func (m *SparseMatrix) FixValue(row, column, value int) (int, error) {
 		}
 		cell = cell.down
 	}
-	return 0, errors.New(fmt.Sprintf("Couldn't find the right cell for affectation (%v, %v) = %v\n", row, column, value))
+	return 0, errors.New(fmt.Sprintf(
+		"Couldn't find the right cell for affectation (%v, %v) = %v\n", row, column, value))
 }
 
 func PrintSolutionFromCode(sol []int, size int) {
