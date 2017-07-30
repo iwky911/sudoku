@@ -246,8 +246,9 @@ func (m *SparseMatrix) FixValue(row, column, value int) {
 	for i := 0; i < header.ncells; i++ {
 		if cell.code == code {
 			cell.RemoveAllAffectedColumns()
+			return
 		}
 		cell = cell.down
 	}
-	fmt.Println("Couldn't find the right cell for affectation (%i, %i) = %i", row, column, value)
+	fmt.Printf("Couldn't find the right cell for affectation (%v, %v) = %v\n", row, column, value)
 }
