@@ -229,7 +229,10 @@ func (m *SparseMatrix) FixValue(row, column, value int) (int, error) {
 	index := getValueConstraintIndex(row, column, m.size)
 	code := AffectationToCode(row, column, value, m.size)
 
-	header := m.headers[index]
+	header := &m.headers[index]
+	if header.right.left != header {
+		return 0, errors.New("The column has already been assigned")
+	}
 	cell := header.last
 	for i := 0; i < header.ncells; i++ {
 		if cell.code == code {
