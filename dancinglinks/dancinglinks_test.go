@@ -19,21 +19,36 @@ func TestGetSquare(t *testing.T) {
 
 func TestMatrixCreation(t *testing.T) {
 	m := createSparseMatrix(4)
-	for i := 0; i < len(m.headers); i++ {
-		header := &m.headers[i]
-		if header.ncells != 4 {
-			t.Errorf("expecting 4 cells per column in column %i", i)
-		}
-		if header.last == nil {
-			t.Errorf("expecting to be able to reach the last")
-		}
-		c := header.last
-		for j := 0; j < header.ncells; j++ {
-			c = c.down
-		}
-		if c != header.last {
-			t.Errorf("Doesn't have the right number of actual rows!")
-		}
+	if !isSparseMatrixCorrect(m, t) {
+		t.Errorf("Matrix created wasn't correct")
+	}
+}
+
+func TestRemoveColumn(t *testing.T) {
+	m := createSparseMatrix(4)
+
+	m.headers[5].RemoveColumn()
+	m.headers[5].AddColumn()
+	if !isSparseMatrixCorrect(m, t) {
+		t.Errorf("Matrix created wasn't correct")
+	}
+}
+
+func TestSelectValue(t *testing.T) {
+	m := createSparseMatrix(4)
+
+	cell := m.headers[16].last.top
+	cell.RemoveAllAffectedColumns()
+	cell.AddAllAffectedColumns()
+
+	if !isSparseMatrixCorrect(m, t) {
+		t.Errorf("Matrix created wasn't correct")
+	}
+}
+func TestSimpleSudokuSolvable(t *testing.T) {
+	m := createSparseMatrix(4)
+	if !m.Solvable() {
+		t.Errorf("matrix should be solvable")
 	}
 }
 
@@ -46,4 +61,28 @@ func TestGettingSmallestColumn(t *testing.T) {
 	if found != expected {
 		t.Errorf("smallest column wasn't the expected one")
 	}
+}
+
+func isSparseMatrixCorrect(m *SparseMatrix, t *testing.T) bool {
+	success := true
+	for i := 0; i < len(m.headers); i++ {
+		header := &m.headers[i]
+		if header.ncells != m.size {
+			t.Errorf("expecting %i cells per column in column %i", m.size, i)
+			success = false
+		}
+		if header.last == nil {
+			t.Errorf("expecting to be able to reach the last")
+			success = false
+		}
+		c := header.last
+		for j := 0; j < header.ncells; j++ {
+			c = c.down
+		}
+		if c != header.last {
+			t.Errorf("Doesn't have the right number of actual rows!")
+			success = false
+		}
+	}
+	return success
 }

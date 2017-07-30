@@ -11,18 +11,19 @@ Contains the struct
 * second n elts: validates column i contains v
 * final n elts: validates block i contains v
 */
-var m SparseMatrix
 
 var originalMatrix [][]int
 
 type SparseMatrix struct {
-	headers []Header
-	head    *Header
-	size    int
+	headers   []Header
+	head      *Header
+	size      int
+	iteration int
 }
 
 type Cell struct {
 	top, down, left, right, head *Cell
+	header                       *Header
 	value                        int64
 }
 
@@ -30,12 +31,14 @@ type Header struct {
 	left, right *Header
 	last        *Cell
 	ncells      int
+	m           *SparseMatrix
 }
 
 func addCellToColumn(sparse *SparseMatrix, index int, cell *Cell) {
 	var header *Header
 	header = &sparse.headers[index]
 	header.ncells++
+	cell.header = header
 	if header.last == nil {
 		header.last = cell
 		cell.top = cell
@@ -57,12 +60,13 @@ func createSparseMatrix(size int) *SparseMatrix {
 	// - 3*9*9 + R * 9 + C (where C is the colum and R is the row): cell in row R and column C has a value.
 	var nColumn = size * size * 4
 	sizesqrt := int(math.Sqrt(float64(size)))
-	sparse := &SparseMatrix{make([]Header, nColumn), nil, size}
+	sparse := &SparseMatrix{make([]Header, nColumn), nil, size, 0}
 	for h := 0; h < nColumn; h++ {
 		var prev = (h - 1 + nColumn) % nColumn
 		var next = (h + 1) % nColumn
 		sparse.headers[h].right = &sparse.headers[next]
 		sparse.headers[h].left = &sparse.headers[prev]
+		sparse.headers[h].m = sparse
 	}
 
 	sparse.head = &sparse.headers[0]
@@ -116,144 +120,101 @@ func getSmallestColumn(head *Header) *Header {
 	return rec
 }
 
-/*
-func addCell(c *Cell, i int) {
-	c.head = m.heads[i]
-	if m.heads[i].down == nil{
-		m.heads[i].down = c
-		c.top=c
-		c.down=c
-	}else{
-		before := m.heads[i].down
-		after := m.heads[i].down.down
-		before.down = c
-		c.top = before
-		c.down = after
-		after.top = c
+// Remove all columns that have a cell on this row, from left to right.
+func (cell *Cell) RemoveAllAffectedColumns() {
+	cell.header.RemoveColumn()
+	for c := cell.right; c != cell; c = c.right {
+		c.header.RemoveColumn()
 	}
 }
 
-func (c *Cell) removeCell() {
-	if c.top == c {
-		//alone in this column
-		c.head.down=nil
-	}else{
+// Add all columns that have a cell on this row, from right to left.
+func (cell *Cell) AddAllAffectedColumns() {
+	for c := cell.left; c != cell; c = c.left {
+		c.header.AddColumn()
+	}
+	cell.header.AddColumn()
+}
+
+// Remove this column and all rows it uses.
+func (header *Header) RemoveColumn() {
+	header.left.right = header.right
+	header.right.left = header.left
+
+	if header.left == header {
+		header.m.head = nil
+	} else {
+		header.m.head = header.right
+	}
+
+	// Remove the rows going down.
+	cell := header.last
+	for i := 0; i < header.ncells; i++ {
+		cell.removeRow()
+		cell = cell.down
+	}
+}
+
+// Add this column and all the rows it uses.
+func (header *Header) AddColumn() {
+	// Add all the rows going up.
+	cell := header.last.top
+	for i := 0; i < header.ncells; i++ {
+		cell.addRow()
+		cell = cell.top
+	}
+
+	header.right.left = header
+	header.left.right = header
+}
+
+// Remove the whole row except this cell, going right.
+func (cell *Cell) removeRow() {
+	for c := cell.right; c != cell; c = c.right {
+		c.header.ncells--
 		c.top.down = c.down
 		c.down.top = c.top
-		c.head.down = c.down
+		c.header.last = c.top // This is a bit dodgy :/
 	}
 }
 
-func (c *Cell) restoreCell(){
-	if c.top == c {
-		// was alone: must relink head
-		c.head.down = c
-	}else{
+// Add the whole row except this cell going left.
+func (cell *Cell) addRow() {
+	for c := cell.left; c != cell; c = c.left {
+		c.header.ncells++
 		c.top.down = c
 		c.down.top = c
 	}
 }
 
-func (c *Cell) removeColumn(){
-	if c.head.left == c.head {
-		// only column in the matrix !
-		m.head = nil
-	}else{
-		if m.head==c.head{
-			m.head = c.head.right
-		}
-		// removing links in header
-		c.head.right.left = c.head.left
-		c.head.left.right = c.head.right
+func (m *SparseMatrix) Solvable() bool {
+	if m.iteration > 100 {
+		return false
 	}
-}
-
-func (c *Cell) restoreColumn(){
-	// restoring header links
-	c.head.right.left = c.head
-	c.head.left.right = c.head
-	if m.head == nil{
-		m.head=c
-	}
-}
-
-func addAffectation(i,j,v int) {
-	cells := [4]*Cell{}
-	for i:=0; i<4; i++{
-		cells[i] = &Cell{}
-	}
-	enr := [3]int{i,j,v}
-	for i:=0; i<4; i++{
-		cells[i].left = cells[(i+3) % 4]
-		cells[i].right = cells[(i+1) % 4]
-		cells[i].value = &enr
-	}
-	addCell(cells[0], i*m.n + v)
-	addCell(cells[1], m.n*m.n + j*m.n + v)
-	addCell(cells[2], m.n*m.n*2 + m.n*((i/m.ns)*m.ns + j/m.ns) + v)
-	addCell(cells[3], m.n*m.n*3 + i*m.n+j)
-}
-
-func nbCells(col *Cell) int {
-	if col.down==nil {
-		return 0
-	}
-	if col.down.down == col.down {
-		return 1
-	}
-	i:=1
-	for elt:= col.down.down; elt!=col.down; elt= elt.down {
-		i++
-	}
-	return i
-}
-
-func (sel *Cell) removeLinkedCells(){
-	sel.removeColumn()
-	for col:= sel.right; col!=sel; col=col.right {
-		col.removeColumn()
-		for row := col.down; row!=col; row=row.down{
-			for cell:= row.right; row!=cell; cell = cell.right{
-				cell.removeCell()
-			}
-		}
-	}
-}
-
-func (sel *Cell) restoreLinkedCells(){
-	sel.restoreColumn()
-	for col:= sel.right; col!=sel; col=col.right {
-		col.restoreColumn()
-		for row := col.down; row!=col; row=row.down{
-			for cell:= row.right; row!=cell; cell = cell.right{
-				cell.restoreCell()
-			}
-		}
-	}
-}
-*/
-
-/*
-func solvable(c *Cell) bool {
-	switch{
-	case c == nil:
+	m.iteration++
+	if m.head == nil {
 		return true
-	case c.down == nil:
+	}
+	header := getSmallestColumn(m.head)
+	if header.ncells == 0 {
 		return false
-	default:
-		first:=true
-		for selectedRow :=c.down; (selectedRow != c.down) || (selectedRow == c.down && first) ; selectedRow = selectedRow.down {
-			selectedRow.removeLinkedCells()
-			if solvable(getSmallerColumn(m.head)){
-				aff := selectedRow.value
-				originalMatrix[aff[0]][aff[1]]=aff[2]
-				return true
-			}
-			selectedRow.restoreLinkedCells()
-			first=false
+	}
+
+	selectedCell := header.last
+	for i := 0; i < header.ncells; i++ {
+		// Selecting |cell|.
+		// for col in cell:
+		// remove column.
+		// remove all rows.
+		// ..
+
+		selectedCell.RemoveAllAffectedColumns()
+
+		if m.Solvable() {
+			return true
 		}
-		return false
+		selectedCell.AddAllAffectedColumns()
+		selectedCell = selectedCell.down
 	}
 	return false
 }
-*/
