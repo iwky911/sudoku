@@ -1,4 +1,4 @@
-package main
+package dancinglinks
 
 import (
 	"errors"
@@ -50,7 +50,7 @@ func addCellToColumn(sparse *SparseMatrix, index int, cell *Cell) {
 	cell.down.top = cell
 }
 
-func createSparseMatrix(size int) *SparseMatrix {
+func NewSparseMatrix(size int) *SparseMatrix {
 	// Column (constraints) are ordered in the following way:
 	// - N * 9 + X (where N < 9 and X < 9): Value X is in column N
 	// - 9*9 + N * 9 + X (where N < 9 and X < 9): Value X is in row N

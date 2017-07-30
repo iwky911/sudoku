@@ -1,4 +1,4 @@
-package main
+package dancinglinks
 
 import (
 	"testing"
@@ -39,14 +39,14 @@ func TestAffectationToCode(t *testing.T) {
 }
 
 func TestMatrixCreation(t *testing.T) {
-	m := createSparseMatrix(4)
+	m := NewSparseMatrix(4)
 	if !isSparseMatrixCorrect(m, t) {
 		t.Errorf("Matrix created wasn't correct")
 	}
 }
 
 func TestRemoveColumn(t *testing.T) {
-	m := createSparseMatrix(4)
+	m := NewSparseMatrix(4)
 
 	m.headers[5].RemoveColumn()
 	m.headers[5].AddColumn()
@@ -56,7 +56,7 @@ func TestRemoveColumn(t *testing.T) {
 }
 
 func TestSelectValue(t *testing.T) {
-	m := createSparseMatrix(4)
+	m := NewSparseMatrix(4)
 
 	cell := m.headers[16].last.top
 	cell.RemoveAllAffectedColumns()
@@ -67,14 +67,14 @@ func TestSelectValue(t *testing.T) {
 	}
 }
 func TestSimpleSudokuSolvable(t *testing.T) {
-	m := createSparseMatrix(4)
+	m := NewSparseMatrix(4)
 	if !m.Solvable() {
 		t.Errorf("matrix should be solvable")
 	}
 }
 
 func TestGettingSmallestColumn(t *testing.T) {
-	m := createSparseMatrix(4)
+	m := NewSparseMatrix(4)
 
 	expected := &m.headers[3]
 	expected.ncells = expected.ncells - 1

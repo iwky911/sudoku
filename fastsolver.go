@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/iwky911/sudoku/tools"
+	"github.com/iwky911/sudoku/dancinglinks"
 	"io"
 	"os"
 )
@@ -26,7 +27,7 @@ func main() {
 	}
 	fmt.Println("Parsed a matrix of size", size)
 
-	m := createSparseMatrix(size)
+	m := dancinglinks.NewSparseMatrix(size)
 	partialsol := make([]int, 0, len(affectations))
 	for _, affectation := range affectations {
 		fmt.Printf("Affecting, (%v, %v) = %v\n", affectation.Row, affectation.Column, affectation.Value)
@@ -41,7 +42,7 @@ func main() {
 	sol = append(sol, partialsol...)
 	if solvable {
 		fmt.Println("sudoku is solvable!!")
-		PrintSolutionFromCode(sol, size)
+		dancinglinks.PrintSolutionFromCode(sol, size)
 	} else {
 		fmt.Println("sudoku is not solvable :(")
 	}
