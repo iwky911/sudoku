@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"github.com/iwky911/sudoku/tools"
 	"github.com/iwky911/sudoku/dancinglinks"
+	"github.com/iwky911/sudoku/tools"
 	"io"
 	"os"
 )
@@ -38,7 +38,7 @@ func main() {
 		}
 		partialsol = append(partialsol, code)
 	}
-	solvable, sol := m.Solvable()
+	solvable, sol := m.GetSolution()
 	sol = append(sol, partialsol...)
 	if solvable {
 		fmt.Println("sudoku is solvable!!")

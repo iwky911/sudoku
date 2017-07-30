@@ -203,7 +203,7 @@ func (cell *Cell) addRow() {
 	}
 }
 
-func (m *SparseMatrix) Solvable() (bool, []int) {
+func (m *SparseMatrix) GetSolution() (bool, []int) {
 	if m.head == nil {
 		return true, make([]int, 0)
 	}
@@ -216,8 +216,8 @@ func (m *SparseMatrix) Solvable() (bool, []int) {
 	for i := 0; i < header.ncells; i++ {
 		selectedCell.RemoveAllAffectedColumns()
 
-		solvable, sol := m.Solvable()
-		if solvable {
+		valid, sol := m.GetSolution()
+		if valid {
 			return true, append(sol, selectedCell.code)
 		}
 		selectedCell.AddAllAffectedColumns()
