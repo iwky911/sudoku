@@ -1,8 +1,10 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"math"
+	"sort"
 )
 
 /*
@@ -15,10 +17,9 @@ Contains the struct
 var originalMatrix [][]int
 
 type SparseMatrix struct {
-	headers   []Header
-	head      *Header
-	size      int
-	iteration int
+	headers []Header
+	head    *Header
+	size    int
 }
 
 type Cell struct {
@@ -66,7 +67,7 @@ func createSparseMatrix(size int) *SparseMatrix {
 	// - 3*9*9 + R * 9 + C (where C is the colum and R is the row): cell in row R and column C has a value.
 	var nColumn = size * size * 4
 	sizesqrt := int(math.Sqrt(float64(size)))
-	sparse := &SparseMatrix{make([]Header, nColumn), nil, size, 0}
+	sparse := &SparseMatrix{make([]Header, nColumn), nil, size}
 	for h := 0; h < nColumn; h++ {
 		var prev = (h - 1 + nColumn) % nColumn
 		var next = (h + 1) % nColumn
@@ -211,33 +212,30 @@ func (cell *Cell) addRow() {
 	}
 }
 
-func (m *SparseMatrix) Solvable() bool {
-	if m.iteration > 100 {
-		return false
-	}
-	m.iteration++
+func (m *SparseMatrix) Solvable() (bool, []int) {
 	if m.head == nil {
-		return true
+		return true, make([]int, 0)
 	}
 	header := getSmallestColumn(m.head)
 	if header.ncells == 0 {
-		return false
+		return false, nil
 	}
 
 	selectedCell := header.last
 	for i := 0; i < header.ncells; i++ {
 		selectedCell.RemoveAllAffectedColumns()
 
-		if m.Solvable() {
-			return true
+		solvable, sol := m.Solvable()
+		if solvable {
+			return true, append(sol, selectedCell.code)
 		}
 		selectedCell.AddAllAffectedColumns()
 		selectedCell = selectedCell.down
 	}
-	return false
+	return false, nil
 }
 
-func (m *SparseMatrix) FixValue(row, column, value int) {
+func (m *SparseMatrix) FixValue(row, column, value int) (int, error) {
 	index := getValueConstraintIndex(row, column, m.size)
 	code := AffectationToCode(row, column, value, m.size)
 
@@ -246,9 +244,21 @@ func (m *SparseMatrix) FixValue(row, column, value int) {
 	for i := 0; i < header.ncells; i++ {
 		if cell.code == code {
 			cell.RemoveAllAffectedColumns()
-			return
+			return code, nil
 		}
 		cell = cell.down
 	}
-	fmt.Printf("Couldn't find the right cell for affectation (%v, %v) = %v\n", row, column, value)
+	return 0, errors.New(fmt.Sprintf("Couldn't find the right cell for affectation (%v, %v) = %v\n", row, column, value))
+}
+
+func PrintSolutionFromCode(sol []int, size int) {
+	sort.Ints(sol)
+
+	for i, v := range sol {
+		if i%size == 0 {
+			fmt.Println()
+		}
+		fmt.Printf("%v,", (v%size)+1)
+	}
+	fmt.Println()
 }

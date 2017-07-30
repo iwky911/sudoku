@@ -24,12 +24,21 @@ func main() {
 	fmt.Println("Parsed a matrix of size", size)
 
 	m := createSparseMatrix(size)
+	partialsol := make([]int, 0, len(affectations))
 	for _, affectation := range affectations {
 		fmt.Printf("Affecting, (%v, %v) = %v\n", affectation.Row, affectation.Column, affectation.Value)
-		m.FixValue(affectation.Row, affectation.Column, affectation.Value)
+		code, err := m.FixValue(affectation.Row, affectation.Column, affectation.Value)
+		if err != nil {
+			fmt.Printf("Failed to do the affectation")
+			return
+		}
+		partialsol = append(partialsol, code)
 	}
-	if m.Solvable() {
+	solvable, sol := m.Solvable()
+	sol = append(sol, partialsol...)
+	if solvable {
 		fmt.Println("sudoku is solvable!!")
+		PrintSolutionFromCode(sol, size)
 	} else {
 		fmt.Println("sudoku is not solvable :(")
 	}
