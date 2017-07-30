@@ -2,17 +2,24 @@ package tools
 
 import (
 	"fmt"
-	"sort"
+	"strconv"
+	"strings"
 )
 
 func PrintSolutionFromCode(sol []int, size int) {
-	sort.Ints(sol)
-
-	for i, v := range sol {
-		if i%size == 0 {
-			fmt.Println()
-		}
-		fmt.Printf("%v,", (v%size)+1)
+	matrix := make([][]string, size)
+	for i := 0; i < size; i++ {
+		matrix[i] = make([]string, size)
 	}
-	fmt.Println()
+
+	for _, code := range sol {
+		r := code / (size * size)
+		c := (code / size) % size
+		v := code%size + 1
+		matrix[r][c] = strconv.Itoa(v)
+	}
+
+	for _, row := range matrix {
+		fmt.Println(strings.Join(row, ","))
+	}
 }

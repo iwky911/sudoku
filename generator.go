@@ -35,6 +35,17 @@ func main() {
 	if !possible {
 		fmt.Println("The generated sudoku didn't have a solution. Try again :)")
 	}
+
+	// Now that we have the solution, shuffle it.
 	solution = append(solution, s...)
-	tools.PrintSolutionFromCode(solution, size)
+	perm := rand.Perm(len(solution))
+	partialSol := make([]int, len(solution))
+	for i, v := range perm {
+		partialSol[i] = solution[v]
+	}
+
+	// Select only a part of the solution to be visible.
+	solutionSize := int(float64(len(solution)) * (*uncoveredFlag))
+
+	tools.PrintSolutionFromCode(partialSol[:solutionSize], size)
 }
