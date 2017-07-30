@@ -17,6 +17,27 @@ func TestGetSquare(t *testing.T) {
 	}
 }
 
+func TestAffectationToCode(t *testing.T) {
+	cases := []struct {
+		row, column, value, size, code int
+	}{
+		{0, 0, 0, 4, 0},
+		{1, 3, 2, 4, 30},
+	}
+
+	for _, tc := range cases {
+		result := AffectationToCode(tc.row, tc.column, tc.value, tc.size)
+		if result != tc.code {
+			t.Errorf("Expected %i but got %i", tc.code, result)
+		}
+
+		r, c, v := CodeToAffectation(tc.code, tc.size)
+		if r != tc.row || c != tc.column || v != tc.value {
+			t.Errorf("Wrong value for code %i", tc.code)
+		}
+	}
+}
+
 func TestMatrixCreation(t *testing.T) {
 	m := createSparseMatrix(4)
 	if !isSparseMatrixCorrect(m, t) {

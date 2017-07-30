@@ -24,7 +24,13 @@ type SparseMatrix struct {
 type Cell struct {
 	top, down, left, right, head *Cell
 	header                       *Header
-	value                        int64
+	code                         int
+}
+
+func newCell(code int) *Cell {
+	cell := new(Cell)
+	cell.code = code
+	return cell
 }
 
 type Header struct {
@@ -74,10 +80,11 @@ func createSparseMatrix(size int) *SparseMatrix {
 		for column := 0; column < size; column++ {
 			for value := 0; value < size; value++ {
 				// This configuration matches three constraints.
-				cconstr := new(Cell)
-				rconstr := new(Cell)
-				sconstr := new(Cell)
-				vconstr := new(Cell)
+				code := AffectationToCode(row, column, value, size)
+				cconstr := newCell(code)
+				rconstr := newCell(code)
+				sconstr := newCell(code)
+				vconstr := newCell(code)
 
 				// wire them horizontally
 				cconstr.left = vconstr
@@ -100,6 +107,23 @@ func createSparseMatrix(size int) *SparseMatrix {
 
 	fmt.Println("Sparse matrix created")
 	return sparse
+}
+
+func getValueConstraintIndex(row, column, size int) int {
+	return size*size*3 + row*size + column
+}
+
+func AffectationToCode(row, column, value, size int) int {
+	return value + column*size + row*size*size
+}
+
+func CodeToAffectation(code, size int) (int, int, int) {
+	value := code % size
+	code = code / size
+	column := code % size
+	code = code / size
+	row := code % size
+	return row, column, value
 }
 
 func getSquare(row, column, sizesqrt int) int {
@@ -202,12 +226,6 @@ func (m *SparseMatrix) Solvable() bool {
 
 	selectedCell := header.last
 	for i := 0; i < header.ncells; i++ {
-		// Selecting |cell|.
-		// for col in cell:
-		// remove column.
-		// remove all rows.
-		// ..
-
 		selectedCell.RemoveAllAffectedColumns()
 
 		if m.Solvable() {
@@ -217,4 +235,7 @@ func (m *SparseMatrix) Solvable() bool {
 		selectedCell = selectedCell.down
 	}
 	return false
+}
+
+func (m *SparseMatrix) FixValue(row, colum, value int) {
 }
