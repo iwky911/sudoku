@@ -100,7 +100,7 @@ func createSparseMatrix(size int) *SparseMatrix {
 				addCellToColumn(sparse, column*size+value, cconstr)
 				addCellToColumn(sparse, size*size+row*size+value, rconstr)
 				addCellToColumn(sparse, size*size*2+getSquare(row, column, sizesqrt)*size+value, sconstr)
-				addCellToColumn(sparse, size*size*3+row*size+column, vconstr)
+				addCellToColumn(sparse, getValueConstraintIndex(row, column, size), vconstr)
 			}
 		}
 	}
@@ -237,5 +237,17 @@ func (m *SparseMatrix) Solvable() bool {
 	return false
 }
 
-func (m *SparseMatrix) FixValue(row, colum, value int) {
+func (m *SparseMatrix) FixValue(row, column, value int) {
+	index := getValueConstraintIndex(row, column, m.size)
+	code := AffectationToCode(row, column, value, m.size)
+
+	header := m.headers[index]
+	cell := header.last
+	for i := 0; i < header.ncells; i++ {
+		if cell.code == code {
+			cell.RemoveAllAffectedColumns()
+		}
+		cell = cell.down
+	}
+	fmt.Println("Couldn't find the right cell for affectation (%i, %i) = %i", row, column, value)
 }
