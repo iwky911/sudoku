@@ -68,7 +68,7 @@ func TestSelectValue(t *testing.T) {
 }
 func TestSimpleSudokuSolvable(t *testing.T) {
 	m := NewSparseMatrix(4)
-	if !m.Solvable() {
+	if valid, _ :=m.GetSolution(); !valid {
 		t.Errorf("matrix should be solvable")
 	}
 }
